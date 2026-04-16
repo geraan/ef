@@ -48,11 +48,11 @@
         .pdf-links {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border-radius: 20px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.8rem;
+            padding: 0.5rem 0.5rem;
+            margin-bottom: 0.8rem;
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             border: 1px solid #e2edf7;
@@ -61,9 +61,9 @@
         .pdf-card {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 4px;
             background: white;
-            padding: 0.7rem 1.5rem;
+            padding: 0.7rem 0.7rem;
             border-radius: 20px;
             transition: all 0.2s ease;
             text-decoration: none;
@@ -639,9 +639,33 @@
     }
     
     function renderFileList(filterText = '') {
-        const lowerFilter = filterText.toLowerCase();
-        const filtered = allFiles.filter(file => file.toLowerCase().includes(lowerFilter));
-        fileStatsSpan.textContent = `📁 Всего: ${allFiles.length} | Показано: ${filtered.length}`;
+        let filtered = allFiles;
+    
+        if (filterText.trim() !== '') {
+            const searchTerm = filterText.trim().toLowerCase();
+        
+            filtered = allFiles.filter(file => {
+                // Получаем отображаемое имя без расширения
+                const displayName = file.replace(/\.mp3$/i, '');
+                const lowerDisplayName = displayName.toLowerCase();
+            
+                // Точный поиск: если пользователь ввел "3." - ищем именно "3." в отображаемом имени
+                // но также поддерживаем обычный поиск подстроки
+                if (searchTerm.includes('.')) {
+                    // Если в поиске есть точка, ищем точное вхождение с учётом позиции
+                    // Например: "3." должно найти "SB_1.03", "SB_2.03", "SB_3.01" но НЕ "1.3"
+                    // Для этого проверяем, что точка в поиске совпадает с точкой в имени после цифры
+                    return lowerDisplayName.includes(searchTerm);
+                } else {
+                    // Обычный поиск без точки
+                    return lowerDisplayName.includes(searchTerm);
+                }
+            });
+        }
+
+        
+        fileStatsSpan.innerHTML = `📁 Всего треков: ${allFiles.length} | Показано: ${filtered.length}`;
+
         if (filtered.length === 0) {
             filesListEl.innerHTML = `<div class="empty-state">🎧 Ничего не найдено. Попробуйте другой запрос.</div>`;
             return;
